@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import BadUserInput from 'src/utils/common/BadUserInput';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/CreateUserDto';
 import { GetUserDto } from './dtos/GetUserDto';
@@ -13,9 +14,7 @@ export class AuthService {
   async signUp(createUserDto: CreateUserDto) {
     try {
       if (createUserDto.password !== createUserDto.confirmPassword) {
-        return {
-          code: 'password_does_not_match_confirm_password',
-        };
+        return new BadUserInput('password_does_not_match_confirm_password');
       }
       const newUser = this.userRepo.create({
         ...createUserDto,
@@ -29,7 +28,7 @@ export class AuthService {
     } catch (error) {
       console.log(error, 'error');
       if (error.code === 'ER_DUP_ENTRY') {
-        return { message: 'User already exists', code: 'duplicated_user' };
+        return new BadUserInput('email_already_exists');
       }
     }
   }
@@ -41,12 +40,12 @@ export class AuthService {
     });
 
     if (!user) {
-      return { code: 'user_not_found' };
+      return new BadUserInput('email_does_not_exist');
     }
 
     const isValid = await Hashing.compare(getUserDto.password, user.password);
     if (!isValid) {
-      return { code: 'invalid_password' };
+      return new BadUserInput('password_is_invalid');
     }
     delete user.password;
     return user;
