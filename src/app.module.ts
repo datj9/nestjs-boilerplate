@@ -10,7 +10,7 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.development.env',
+      envFilePath: `.${process.env.NODE_ENV}.env`,
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -20,7 +20,7 @@ import { ConfigModule } from '@nestjs/config';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [User],
-      synchronize: true,
+      synchronize: false,
       migrationsRun: false,
     }),
     AuthModule,
